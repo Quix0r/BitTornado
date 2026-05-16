@@ -43,14 +43,14 @@ class BTEncoder(object):
         elif isinstance(data, Bencached):
             assert data.marker == BENCACHED_MARKER
             ctext.append(data.bencoded)
-        elif isinstance(data, collections.Sequence):
+        elif isinstance(data, collections.abc.Sequence):
             # A list takes the form lXe where X is the concatenation of the
             # encodings of all elements in the list.
             ctext.append(b'l')
             for element in data:
                 self.encode(element, ctext)
             ctext.append(b'e')
-        elif isinstance(data, collections.Mapping):
+        elif isinstance(data, collections.abc.Mapping):
             # A dictionary is encoded as dXe where X is the concatenation of
             # the encodings of all key,value pairs in the dictionary, sorted by
             # key. Key, value pairs are themselves concatenations of the
