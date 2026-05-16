@@ -44,18 +44,18 @@ class ComparableAPITest(APITest):
     def test_methods(self):
         for attr, args, kwargs in self.method_tests:
             with self.subTest(attr=attr):
-                x = getattr(self.base, attr)(*args, **kwargs)
-                y = getattr(self.this, attr)(*args, **kwargs)
+                one = getattr(self.base, attr)(*args, **kwargs)
+                two = getattr(self.this, attr)(*args, **kwargs)
                 self.assertEqual(self.base, self.this)
-                self.assertEqual(x, y)
+                self.assertEqual(one, two)
 
     def test_functions(self):
         for func, args, kwargs in self.function_tests:
             with self.subTest(func=func.__name__):
-                x = func(self.base, *args, **kwargs)
-                y = func(self.this, *args, **kwargs)
+                one = func(self.base, *args, **kwargs)
+                two = func(self.this, *args, **kwargs)
                 self.assertEqual(self.base, self.this)
-                self.assertEqual(x, y)
+                self.assertEqual(one, two)
 
 
 class CopyAPITest(ComparableAPITest):
@@ -77,10 +77,10 @@ class CopyAPITest(ComparableAPITest):
             with self.subTest(attr=attr):
                 bcopy = self.base.copy()
                 tcopy = self.this.copy()
-                x = getattr(bcopy, attr)(*args, **kwargs)
-                y = getattr(tcopy, attr)(*args, **kwargs)
+                one = getattr(bcopy, attr)(*args, **kwargs)
+                two = getattr(tcopy, attr)(*args, **kwargs)
                 self.assertEqual(bcopy, tcopy)
-                self.assertEqual(x, y)
+                self.assertEqual(one, two)
 
 
 class TypedListAPITest(CopyAPITest, unittest.TestCase):
@@ -140,10 +140,10 @@ class DictSetTest(CopyAPITest, unittest.TestCase):
         self.assertTrue(self.base >= self.this)
 
         tcopy = self.this.copy()
-        x = tcopy.pop()
+        one = tcopy.pop()
 
-        self.assertTrue(x not in tcopy)  # value removed
-        self.assertTrue(x in self.this)  # original unaffected
+        self.assertTrue(one not in tcopy)  # value removed
+        self.assertTrue(one in self.this)  # original unaffected
 
         # Test comparisons in DictSet
         self.assertEqual(len(tcopy), len(self.base) - 1)

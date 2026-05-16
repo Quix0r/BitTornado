@@ -41,7 +41,7 @@ class Bitfield(list):
         self.numfalse += self[index] - val
         super(Bitfield, self).__setitem__(index, val)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "<Bitfield ({})>".format(','.join(str(int(i)) for i in self))
 
     def __bytes__(self):
@@ -51,7 +51,7 @@ class Bitfield(list):
                      for x in range(0, len(bits), 8))
 
     @property
-    def complete(self):
+    def complete(self) -> bool:
         """True if all booleans are True"""
         return not self.numfalse
 
@@ -61,5 +61,5 @@ class TrueBitfield(object):     # pylint: disable=R0903
     True bits"""
     complete = True
 
-    def __getitem__(self, index):
+    def __getitem__(self, index) -> bool:
         return True

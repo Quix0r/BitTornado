@@ -99,9 +99,9 @@ class StorageWrapper:
             self.sync()
         self.backfunc(self._bgsync, max(self.config['auto_flush'] * 60, 60))
 
-    def old_style_init(self):
+    def old_style_init(self) -> bool:
         while self.initialize_tasks:
-            msg, done, init, next = self.initialize_tasks.pop(0)
+            msg, done, init, _next = self.initialize_tasks.pop(0)
             if init():
                 self.statusfunc(activity=msg, fractionDone=done)
                 t = clock() + STATS_INTERVAL
@@ -113,7 +113,7 @@ class StorageWrapper:
                     self.unpauseflag.wait()
                     if self.flag.is_set():
                         return False
-                    x = next()
+                    x = _next()
 
         self.statusfunc(fractionDone=0)
         return True
@@ -149,7 +149,7 @@ class StorageWrapper:
 
         self.backfunc(self._initialize)
 
-    def init_hashcheck(self):
+    def init_hashcheck(self) -> bool:
         if self.flag.is_set():
             return False
         self.check_list = []
@@ -211,7 +211,7 @@ class StorageWrapper:
     def hashcheckfunc(self):
         if self.flag.is_set():
             return None
-        if not self.check_list:
+        elif not self.check_list:
             return None
 
         i = self.check_list.pop(0)
@@ -249,11 +249,12 @@ class StorageWrapper:
             self.finished()
         return self.numchecked / self.check_total
 
-    def init_movedata(self):
+    def init_movedata(self) -> bool:
         if self.flag.is_set():
             return False
-        if self.alloc_type != 'sparse':
+        elif self.alloc_type != 'sparse':
             return False
+
         self.storage.top_off()  # sets file lengths to their final size
         self.movelist = []
         if self.out_of_place == 0:
@@ -273,7 +274,7 @@ class StorageWrapper:
     def movedatafunc(self):
         if self.flag.is_set():
             return None
-        if not self.movelist:
+        elif not self.movelist:
             return None
         i = self.movelist.pop(0)
         old = self.read_raw(self.places[i], 0, self._piecelen(i))
@@ -296,11 +297,12 @@ class StorageWrapper:
         self.tomove -= 1
         return self.tomove / self.out_of_place
 
-    def init_alloc(self):
+    def init_alloc(self) -> bool:
         if self.flag.is_set():
             return False
-        if not self.holes:
+        elif not self.holes:
             return False
+
         self.numholes = float(len(self.holes))
         self.alloc_buf = b'\xff' * self.piece_size
         if self.alloc_type == 'pre-allocate':
@@ -308,9 +310,8 @@ class StorageWrapper:
             return True
         if self.alloc_type == 'background':
             self.bgalloc_enabled = True
-        if self.blocked_moveout:
-            return True
-        return False
+
+        return self.blocked_moveout:
 
     def _allocfunc(self):
         while self.holes:
@@ -378,7 +379,7 @@ class StorageWrapper:
         return self.storage.was_preallocated(piece * self.piece_size,
                                              self._piecelen(piece))
 
-    def _piecelen(self, piece):
+    def _piecelen(self, piece) -> int:
         if piece < len(self.hashes) - 1:
             return self.piece_size
         else:
@@ -387,7 +388,7 @@ class StorageWrapper:
     def get_amount_left(self):
         return self.amount_left
 
-    def do_I_have_anything(self):
+    def do_I_have_anything(self) -> bool:
         return self.amount_left < self.total_length
 
     def _make_inactive(self, index):
@@ -400,10 +401,10 @@ class StorageWrapper:
         l.append((x, length - x))
         self.inactive_requests[index] = l
 
-    def is_endgame(self):
+    def is_endgame(self) -> bool:
         return not self.amount_inactive
 
-    def am_I_complete(self):
+    def am_I_complete(self) -> bool:
         return self.amount_obtained == self.amount_desired
 
     def reset_endgame(self, requestlist):
@@ -428,13 +429,13 @@ class StorageWrapper:
             self.have_cloaked_data = (bytes(newhave), unhaves)
         return self.have_cloaked_data
 
-    def do_I_have(self, index):
+    def do_I_have(self, index) -> bool:
         return self.have[index]
 
-    def do_I_have_requests(self, index):
+    def do_I_have_requests(self, index) -> bool:
         return not not self.inactive_requests[index]
 
-    def is_unstarted(self, index):
+    def is_unstarted(self, index) -> bool:
         return not self.have[index] and not self.numactive[index] and \
             index not in self.dirty
 
@@ -459,7 +460,7 @@ class StorageWrapper:
         self.amount_inactive -= r[1]
         return r
 
-    def write_raw(self, index, begin, data):
+    def write_raw(self, index, begin, data) -> bool:
         try:
             self.storage.write(self.piece_size * index + begin, data)
             return True
@@ -467,7 +468,7 @@ class StorageWrapper:
             self.failed('IO Error: ' + str(e))
             return False
 
-    def _write_to_buffer(self, piece, start, data):
+    def _write_to_buffer(self, piece, start, data) -> bool:
         if not self.write_buf_max:
             return self.write_raw(self.places[piece], start, data)
         self.write_buf_size += len(data)
@@ -483,7 +484,7 @@ class StorageWrapper:
         self.write_buf[piece].append((start, data))
         return True
 
-    def _flush_buffer(self, piece, popped=False):
+    def _flush_buffer(self, piece, popped=False) -> bool:
         if piece not in self.write_buf:
             return True
         if not popped:
@@ -508,12 +509,12 @@ class StorageWrapper:
                 pass
         try:
             self.storage.sync()
-        except IOError as e:
+        except IOError, as e:
             self.failed('IO Error: ' + str(e))
         except OSError as e:
             self.failed('OS Error: ' + str(e))
 
-    def _move_piece(self, index, newpos):
+    def _move_piece(self, index, newpos) -> int:
         oldpos = self.places[index]
         if DEBUG:
             print('moving {} from {} to {}'.format(index, oldpos, newpos))
@@ -554,7 +555,7 @@ class StorageWrapper:
 
         return oldpos
 
-    def _clear_space(self, index):
+    def _clear_space(self, index) -> bool:
         h = self.holes.pop(0)
         n = h
         if self.blocked[n]:     # assume not self.blocked[index]
@@ -597,7 +598,7 @@ class StorageWrapper:
         self.places[index] = index
         return False
 
-    def piece_came_in(self, index, begin, piece, source=None):
+    def piece_came_in(self, index, begin, piece, source=None) -> bool:
         assert not self.have[index]
 
         if index not in self.places:
@@ -607,7 +608,8 @@ class StorageWrapper:
                 print('new place for {} at {}'.format(index,
                                                       self.places[index]))
         if self.flag.is_set():
-            return
+            # @todo Is False correct?
+            return False
 
         if index in self.failed_pieces:
             old = self.read_raw(self.places[index], begin, len(piece))
@@ -743,12 +745,12 @@ class StorageWrapper:
         except OSError as e:
             self.failed('OS Error: ' + str(e))
 
-    def has_data(self, index):
+    def has_data(self, index) -> bool:
         return index not in self.holes and index not in self.blocked_holes
 
-    def doublecheck_data(self, pieces_to_check):
+    def doublecheck_data(self, pieces_to_check) -> bool:
         if not self.double_check:
-            return
+            return False
         sources = []
         for p, v in self.places.items():
             if v in pieces_to_check:
@@ -839,7 +841,7 @@ class StorageWrapper:
                     indicates allocated space with no valid data, and is
                     reserved so it doesn't need to be hash-checked.
     '''
-    def pickle(self):
+    def pickle(self) -> dict:
         if self.have.complete:
             return {'pieces': 1}
         pieces = Bitfield(len(self.hashes))
@@ -871,7 +873,7 @@ class StorageWrapper:
         return {'pieces': bytes(pieces), 'places': places,
                 'partials': partials}
 
-    def unpickle(self, data, valid_places):
+    def unpickle(self, data, valid_places) -> list:
         got = set()
         places = {}
         dirty = {}

@@ -9,17 +9,19 @@ class HashSet(DictSet):
     keytype = Infohash
 
 
-def test_valid(line):
+def test_valid(line) -> bool:
     """Test for 40 character hex strings
 
     Print error on failure"""
     base_error = '*** WARNING *** line in torrent list'
     if len(line) != 40:
         print(base_error, 'incorrect length:', line)
+        return False
     elif any(char not in HEX for char in line):
         print(base_error, 'has non-hex digits:', line)
-    else:
-        return True
+        return False
+
+    return True
 
 
 def parsetorrentlist(filename, parsed):

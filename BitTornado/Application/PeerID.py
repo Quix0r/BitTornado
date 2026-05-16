@@ -45,10 +45,10 @@ class PeerID(object):
         self.randstr = base64.urlsafe_b64encode(
             hashlib.sha1(x).digest()[-9:])[:11]
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.create()
 
-    def create(self, ins=b'---'):
+    def create(self, ins=b'---') -> str:
         if isinstance(ins, int):
             assert ins < 0x3ffff
             ins = bytes(mapbase64[(ins >> 6 * i) & 0x3f] for i in range(3))

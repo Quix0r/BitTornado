@@ -58,7 +58,7 @@ class ConfigDir(object):
         for key in ignore:
             self.config.pop(key, None)
 
-    def loadConfig(self):
+    def loadConfig(self) -> dict:
         """Read configuration file and update local config dictionary"""
         newconfig = ini_read(self.configfile).get('')
 
@@ -112,7 +112,7 @@ class ConfigDir(object):
         self.torrentDataBuffer[fname] = data
         return data
 
-    def writeTorrentData(self, torrent, data):
+    def writeTorrentData(self, torrent, data) -> bool:
         """Add a torrent data file to cache"""
         self.torrentDataBuffer[torrent] = data
         fname = os.path.join(self.dir_datacache, hexlify(torrent).decode())

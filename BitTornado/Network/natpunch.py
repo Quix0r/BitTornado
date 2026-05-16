@@ -44,9 +44,9 @@ class _UPnP1(object):   # derived from Myers Carpenter's code
         return success
 
     def open(self, ip, p):
-        map = self._get_map()
+        _map = self._get_map()
         try:
-            map.Add(p, 'TCP', p, ip, True, ID.decode())
+            _map.Add(p, 'TCP', p, ip, True, ID.decode())
             if DEBUG:
                 print('port opened: {}:{}'.format(ip, p))
             success = True
@@ -58,9 +58,9 @@ class _UPnP1(object):   # derived from Myers Carpenter's code
         return success
 
     def close(self, p):
-        map = self._get_map()
+        _map = self._get_map()
         try:
-            map.Remove(p, 'TCP')
+            _map.Remove(p, 'TCP')
             success = True
             if DEBUG:
                 print('port closed: ' + str(p))
@@ -75,11 +75,11 @@ class _UPnP1(object):   # derived from Myers Carpenter's code
         if not _supported:
             return
         try:
-            map = self._get_map()
+            _map = self._get_map()
             ports_in_use = []
-            for i in range(len(map)):
+            for i in range(len(_map)):
                 try:
-                    mapping = map[i]
+                    mapping = _map[i]
                     port = mapping.ExternalPort
                     prot = str(mapping.Protocol).lower()
                     desc = str(mapping.Description).lower()
@@ -90,7 +90,7 @@ class _UPnP1(object):   # derived from Myers Carpenter's code
             success = True
             for port in ports_in_use:
                 try:
-                    map.Remove(port, 'TCP')
+                    _map.Remove(port, 'TCP')
                 except Exception:
                     success = False
             if not success and not retry:

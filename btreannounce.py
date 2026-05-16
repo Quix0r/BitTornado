@@ -51,5 +51,7 @@ def main(argv):
     for fname in args[1:]:
         reannounce(fname, announce, announce_list, verbose)
 
+    return 0
+
 if __name__ == '__main__':
     sys.exit(main(sys.argv))

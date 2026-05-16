@@ -58,5 +58,7 @@ def main(argv):
 
         metainfo.write(fname)
 
+    return 0
+
 if __name__ == '__main__':
     sys.exit(main(sys.argv))

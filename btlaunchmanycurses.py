@@ -113,7 +113,7 @@ class CursesDisplayer:
         curses.doupdate()
         self.changeflag.clear()
 
-    def _display_line(self, s, bold=False):
+    def _display_line(self, s, bold=False: bool) -> bool:
         if self.disp_end:
             return True
         line = self.disp_line
@@ -173,9 +173,9 @@ class CursesDisplayer:
             self._display_line('    ' + ljust(msg, self.mainwinw - 4))
             i += 1
 
-    def display(self, data):
+    def display(self, data) -> bool:
         if self.changeflag.is_set():
-            return
+            return False
 
         inchar = self.mainwin.getch()
         if inchar == 12:  # ^L

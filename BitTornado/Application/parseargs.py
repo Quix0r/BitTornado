@@ -1,4 +1,4 @@
-def formatDefinitions(options, COLS, presets={}):
+def formatDefinitions(options, COLS, presets={}) -> str:
     """Format command-line options and documentation to fit into a given
     column width
 
@@ -41,7 +41,7 @@ def formatDefinitions(options, COLS, presets={}):
     return '\n'.join(lines)
 
 
-def defaultargs(options):
+def defaultargs(options) -> dict:
     """Produce a dictionary of default arguments from a list of options
     tuples
 

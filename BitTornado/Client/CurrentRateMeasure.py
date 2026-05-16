@@ -18,9 +18,9 @@ class Measure:
         if self.ratesince < t - self.max_rate_period:
             self.ratesince = t - self.max_rate_period
 
-    def get_rate(self):
+    def get_rate(self) -> float:
         self.update_rate(0)
         return self.rate
 
-    def get_total(self):
+    def get_total(self) -> int:
         return self.total

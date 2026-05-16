@@ -16,9 +16,9 @@ from BitTornado.Application.PeerID import createPeerID
 
 
 class SingleDownload:
-    def __init__(self, controller, hash, metainfo, config, myid):
+    def __init__(self, controller, _hash, metainfo, config, myid):
         self.controller = controller
-        self.hash = hash
+        self.hash = _hash
         self.metainfo = metainfo
         self.config = config
 
@@ -38,7 +38,7 @@ class SingleDownload:
 
         d = BT1Download(self.display, self.finished, self.error,
                         controller.exchandler, self.doneflag, config, metainfo,
-                        hash, myid, self.rawserver, controller.listen_port)
+                        _hash, myid, self.rawserver, controller.listen_port)
         self.d = d
 
     def start(self):
@@ -49,6 +49,7 @@ class SingleDownload:
         if not self._hashcheckfunc:
             self._shutdown()
             return
+
         self.controller.hashchecksched(self.hash)
 
     def saveAs(self, name, length, saveas, isdir):
@@ -58,6 +59,7 @@ class SingleDownload:
         if self.is_dead():
             self._shutdown()
             return
+
         self.waiting = False
         self.checking = True
         self._hashcheckfunc(donefunc)
@@ -67,15 +69,16 @@ class SingleDownload:
         if self.is_dead():
             self._shutdown()
             return
-        if not self.d.startEngine(ratelimiter=self.controller.ratelimiter):
+        elif not self.d.startEngine(ratelimiter=self.controller.ratelimiter):
             self._shutdown()
             return
+
         self.d.startRerequester()
         self.statsfunc = self.d.startStats()
         self.rawserver.start_listening(self.d.getPortHandler())
         self.working = True
 
-    def is_dead(self):
+    def is_dead(self) -> bool:
         return self.doneflag.is_set()
 
     def _shutdown(self):
@@ -169,10 +172,10 @@ class LaunchMany:
 
             self.Output.message('shutting down')
             self.hashcheck_queue = []
-            for hash in self.torrent_list:
+            for _hash in self.torrent_list:
                 self.Output.message('dropped "{}"'.format(
-                    self.torrent_cache[hash]['path']))
-                self.downloads[hash].shutdown()
+                    self.torrent_cache[_hash]['path']))
+                self.downloads[_hash].shutdown()
             self.rawserver.shutdown()
 
         except Exception:
@@ -200,14 +203,14 @@ class LaunchMany:
     def stats(self):
         self.rawserver.add_task(self.stats, self.stats_period)
         data = []
-        for hash in self.torrent_list:
-            cache = self.torrent_cache[hash]
+        for _hash in self.torrent_list:
+            cache = self.torrent_cache[_hash]
             if self.config['display_path']:
                 name = cache['path']
             else:
                 name = cache['name']
             size = cache['length']
-            d = self.downloads[hash]
+            d = self.downloads[_hash]
             progress = '0.0%'
             peers = 0
             seeds = 0
@@ -263,21 +266,21 @@ class LaunchMany:
         if stop:
             self.doneflag.set()
 
-    def remove(self, hash):
-        self.torrent_list.remove(hash)
-        self.downloads[hash].shutdown()
-        del self.downloads[hash]
+    def remove(self, _hash):
+        self.torrent_list.remove(_hash)
+        self.downloads[_hash].shutdown()
+        del self.downloads[_hash]
 
-    def add(self, hash, data):
+    def add(self, _hash, data):
         peer_id = createPeerID(self.counter)
         self.counter += 1
-        d = SingleDownload(self, hash, data['metainfo'], self.config, peer_id)
-        self.torrent_list.append(hash)
-        self.downloads[hash] = d
+        d = SingleDownload(self, _hash, data['metainfo'], self.config, peer_id)
+        self.torrent_list.append(_hash)
+        self.downloads[_hash] = d
         d.start()
 
-    def saveAs(self, hash, name, saveas, isdir):
-        x = self.torrent_cache[hash]
+    def saveAs(self, _hash, name, saveas, isdir):
+        x = self.torrent_cache[_hash]
         style = self.config['saveas_style']
         if style == 1 or style == 3:
             if saveas:
@@ -307,9 +310,9 @@ class LaunchMany:
                               x['path'], saveas))
         return saveas
 
-    def hashchecksched(self, hash=None):
-        if hash:
-            self.hashcheck_queue.append(hash)
+    def hashchecksched(self, _hash=None):
+        if _hash:
+            self.hashcheck_queue.append(_hash)
         if not self.hashcheck_current:
             self._hashcheck_start()
 
@@ -325,17 +328,17 @@ class LaunchMany:
         else:
             self.hashcheck_current = None
 
-    def died(self, hash):
-        if hash in self.torrent_cache:
+    def died(self, _hash):
+        if _hash in self.torrent_cache:
             self.Output.message('DIED: "{}"'.format(
-                self.torrent_cache[hash]['path']))
+                self.torrent_cache[_hash]['path']))
 
-    def was_stopped(self, hash):
+    def was_stopped(self, _hash):
         try:
-            self.hashcheck_queue.remove(hash)
+            self.hashcheck_queue.remove(_hash)
         except ValueError:
             pass
-        if self.hashcheck_current == hash:
+        if self.hashcheck_current == _hash:
             self.hashcheck_current = None
             if self.hashcheck_queue:
                 self._hashcheck_start()

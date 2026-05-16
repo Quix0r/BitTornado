@@ -64,7 +64,7 @@ class SingleDownload:
         self.ip = connection.get_ip()
         self.guard = BadDataGuard(self)
 
-    def _backlog(self, just_unchoked):
+    def _backlog(self, just_unchoked) -> int:
         self.backlog = min(
             2 + int(4 * self.measure.get_rate() / self.downloader.chunksize),
             2 * just_unchoked + self.downloader.queue_limit())
@@ -124,10 +124,10 @@ class SingleDownload:
                 self._request_more(new_unchoke=True)
             self.last2 = clock()
 
-    def is_choked(self):
+    def is_choked(self) -> bool:
         return self.choked
 
-    def is_interested(self):
+    def is_interested(self) -> bool:
         return self.interested
 
     def send_interested(self):
@@ -142,7 +142,7 @@ class SingleDownload:
             self.interested = False
             self.connection.send_not_interested()
 
-    def got_piece(self, index, begin, piece):
+    def got_piece(self, index, begin, piece) -> bool:
         length = len(piece)
         try:
             self.active_requests.remove((index, begin, length))
@@ -237,7 +237,7 @@ class SingleDownload:
         if self.downloader.storage.is_endgame():
             self.downloader.start_endgame()
 
-    def fix_download_endgame(self, new_unchoke=False):
+    def fix_download_endgame(self, new_unchoke=False: bool):
         if self.downloader.paused:
             return
         if len(self.active_requests) >= self._backlog(new_unchoke):
@@ -260,7 +260,7 @@ class SingleDownload:
             self.connection.send_request(piece, begin, length)
             self.downloader.chunk_requested(length)
 
-    def got_have(self, index):
+    def got_have(self, index) -> bool:
         if index == self.downloader.numpieces - 1:
             self.downloader.totalmeasure.update_rate(
                 self.downloader.storage.total_length -
@@ -305,7 +305,7 @@ class SingleDownload:
                 self.send_interested()
                 return
 
-    def got_have_bitfield(self, have):
+    def got_have_bitfield(self, have) -> bool:
         if self.downloader.storage.am_I_complete() and have.complete:
             # be nice, show you're a seed too
             if self.downloader.super_seeding:
@@ -330,10 +330,10 @@ class SingleDownload:
             self._check_interests()
         return have.complete
 
-    def get_rate(self):
+    def get_rate(self) -> float:
         return self.measure.get_rate()
 
-    def is_snubbed(self):
+    def is_snubbed(self) -> bool:
         if (self.interested and not self.choked and
                 clock() - self.last2 > self.downloader.snub_time):
             for index, begin, length in self.active_requests:

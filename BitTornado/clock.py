@@ -19,7 +19,7 @@ class RelativeTime(object):     # pylint: disable=R0903
         self.time = time.time()
         self.offset = 0
 
-    def get_time(self):
+    def get_time(self) -> float:
         """Calculate a non-decreasing time representation"""
         systemtime = time.time()
 

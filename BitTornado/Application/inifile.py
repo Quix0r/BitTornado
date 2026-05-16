@@ -23,7 +23,7 @@ may have unpredictable results.
 '''
 
 
-def ini_write(fname, data, comment=''):
+def ini_write(fname, data, comment='') -> bool:
     config = {'': {}}
 
     # Bring data dictionary into line with expectations
@@ -67,7 +67,7 @@ def ini_write(fname, data, comment=''):
         return False
 
 
-def ini_read(fname, errfunc=lambda *x: None):
+def ini_read(fname, errfunc=lambda *x: None) -> dict:
     subconf = {}
     config = {'': subconf}
     try:

@@ -92,7 +92,7 @@ class Upload:
         if not self.cleared:
             self.buffer.append((index, begin, length))
         if not self.choked and self.connection.next_upload is None:
-                self.ratelimiter.queue(self.connection)
+            self.ratelimiter.queue(self.connection)
 
     def got_cancel(self, index, begin, length):
         try:
@@ -124,14 +124,14 @@ class Upload:
             self.piecebuf.release()
             self.piecebuf = None
 
-    def is_choked(self):
+    def is_choked(self) -> bool:
         return self.choked
 
-    def is_interested(self):
+    def is_interested(self) -> bool:
         return self.interested
 
-    def has_queries(self):
+    def has_queries(self) -> bool:
         return not self.choked and len(self.buffer) > 0
 
-    def get_rate(self):
+    def get_rate(self) -> float:
         return self.measure.get_rate()
