@@ -156,6 +156,7 @@ class ShareUDP(SharedStream):
             else:
                 return None
 
+        return None
 
 class ShareHTTP(SharedStream):
     """Shared HTTP stream allows multiple objects to make requests on a single
@@ -276,3 +277,5 @@ def geturl(url, max_redirects=10):
             url = raw
         else:
             raise IOError(('http error', response.status, raw))
+
+    return None
