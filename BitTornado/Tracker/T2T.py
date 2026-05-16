@@ -15,11 +15,11 @@ R_1 = lambda: 1
 
 
 class T2TConnection:
-    def __init__(self, myid, tracker, hash, interval, peers, timeout,
+    def __init__(self, myid, tracker, _hash, interval, peers, timeout,
                  rawserver, disallow, isdisallowed):
         self.tracker = tracker
         self.interval = interval
-        self.hash = hash
+        self.hash = _hash
         self.operatinginterval = interval
         self.peers = peers
         self.rawserver = rawserver
@@ -36,7 +36,7 @@ class T2TConnection:
                'rerequest_interval': interval,
                'http_timeout': timeout}
         self.rerequester = Rerequester(
-            0, myid, hash, [[Announcer(tracker)]], cfg, rawserver.add_task,
+            0, myid, _hash, [[Announcer(tracker)]], cfg, rawserver.add_task,
             self.errorfunc, excfunc, self.addtolist, R_0, R_1, R_0, R_0, R_0,
             R_0, threading.Event())
 
@@ -117,12 +117,12 @@ class T2TConnection:
                 print(' -- lengthening interval to {} seconds'.format(
                       self.operatinginterval))
 
-    def harvest(self):
-        x = []
-        for list in self.peerlists:
-            x += list
+    def harvest(self) -> dict:
+        all_peers = []
+        for peers in self.peerlists:
+            all_peers += peers
         self.peerlists = []
-        return x
+        return all_peers
 
 
 class T2TList:
@@ -146,24 +146,24 @@ class T2TList:
         # step 1:  Create a new list with all tracker/torrent combinations in
         # allowed_dir
         newlist = {}
-        for hash, data in allowed_list.items():
+        for _hash, data in allowed_list.items():
             for tier in data.get('announce-list', []):
                 for tracker in tier:
                     self.disallowed.setdefault(tracker, False)
                     newlist.setdefault(tracker, {})
-                    newlist[tracker][hash] = None   # placeholder
+                    newlist[tracker][_hash] = None   # placeholder
 
         # step 2:  Go through and copy old data to the new list.
         # if the new list has no place for it, then it's old, so deactivate it
         for tracker, hashdata in self.list.items():
-            for hash, t2t in hashdata.items():
-                if tracker not in newlist or hash not in newlist[tracker]:
+            for _hash, t2t in hashdata.items():
+                if tracker not in newlist or _hash not in newlist[tracker]:
                     t2t.deactivate()    # this connection is no longer current
                     self.oldtorrents += [t2t]
                     # keep it referenced in case a thread comes along and
                     # tries to access.
                 else:
-                    newlist[tracker][hash] = t2t
+                    newlist[tracker][_hash] = t2t
             if tracker not in newlist:
                 # reset when no torrents on it left
                 self.disallowed[tracker] = False
@@ -175,14 +175,14 @@ class T2TList:
         # do so.
         # At the same time, copy all entries onto the by-torrent list.
         for tracker, hashdata in newlist.items():
-            for hash, t2t in hashdata.items():
+            for _hash, t2t in hashdata.items():
                 if t2t is None:
-                    hashdata[hash] = T2TConnection(
-                        self.trackerid, tracker, hash, self.interval,
+                    hashdata[_hash] = T2TConnection(
+                        self.trackerid, tracker, _hash, self.interval,
                         self.maxpeers, self.timeout, self.rawserver,
                         self._disallow, self._isdisallowed)
-                newtorrents.setdefault(hash, [])
-                newtorrents[hash] += [hashdata[hash]]
+                newtorrents.setdefault(_hash, [])
+                newtorrents[_hash] += [hashdata[_hash]]
 
         self.torrents = newtorrents
 
@@ -198,9 +198,9 @@ class T2TList:
     def _isdisallowed(self, tracker):
         return self.disallowed[tracker]
 
-    def harvest(self, hash):
+    def harvest(self, _hash):
         harvest = []
         if self.enabled:
-            for t2t in self.torrents[hash]:
+            for t2t in self.torrents[_hash]:
                 harvest += t2t.harvest()
         return harvest

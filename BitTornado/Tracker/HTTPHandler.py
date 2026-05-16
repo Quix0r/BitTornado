@@ -23,7 +23,7 @@ class HTTPConnection:
     def get_ip(self):
         return self.connection.get_ip()
 
-    def data_came_in(self, data):
+    def data_came_in(self, data) -> bool:
         if self.donereading or self.next_func is None:
             return True
         self.buf += data
