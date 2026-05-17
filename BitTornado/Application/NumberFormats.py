@@ -38,7 +38,7 @@ def formatIntClock(secs: int):
     return formatInterval(secs, '{h:d}:{m:02d}:{s:02d}')
 
 
-def formatSize(size: int, std='IEC': str) -> str:
+def formatSize(size: int, std: str = 'IEC') -> str:
     """Format number of bytes according to IEC or SI prefixes.
 
     IEC prefixes:
