@@ -10,7 +10,7 @@ except ImportError:
         return bytes(random.randrange(256) for _ in range(x))
 
 try:
-    from Crypto.Cipher import ARC4
+    from Cryptodome.Cipher import ARC4
     CRYPTO_OK = True
 except ImportError:
     CRYPTO_OK = False
